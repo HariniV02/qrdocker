@@ -6,10 +6,7 @@ from pathlib import Path
 import os
 import argparse
 from datetime import datetime
-import validators  # Import the validators package
-
-# Print Python executable path
-print(f"Python executable being used: {sys.executable}")
+import validators  
 
 # Load environment variables
 load_dotenv()
@@ -68,9 +65,8 @@ def main():
     # Initial logging setup
     setup_logging()
     
-    # Generate a timestamped filename for the QR code
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    qr_filename = f"QRCode_{timestamp}.png"
+    # Filename for the QR code (fixed to github_qr_code.png)
+    qr_filename = "github_qr_code.png"
 
     # Create the full path for the QR code file
     qr_code_full_path = Path.cwd() / QR_DIRECTORY / qr_filename

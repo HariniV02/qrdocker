@@ -1,81 +1,32 @@
-import sys
-import qrcode
-from dotenv import load_dotenv
-import logging.config
-from pathlib import Path
 import os
-import argparse
-from datetime import datetime
-import validators  
+import qrcode
+import logging
+from pathlib import Path
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Load environment variables
-load_dotenv()
+qr_data_url = os.getenv('QR_DATA_URL', 'https://github.com/kaw393939')
+qr_code_dir = os.getenv('QR_CODE_DIR', 'qr_codes')
+qr_code_filename = os.getenv('QR_CODE_FILENAME', 'github_qr_code.png')
+fill_color = os.getenv('FILL_COLOR', 'black')
+back_color = os.getenv('BACK_COLOR', 'white')
 
-# Environment Variables for Configuration
-QR_DIRECTORY = os.getenv('QR_CODE_DIR', 'qr_codes')  # Directory for saving QR code
-FILL_COLOR = os.getenv('FILL_COLOR', 'blue')  # Fill color for the QR code
-BACK_COLOR = os.getenv('BACK_COLOR', 'white')  # Background color for the QR code
+# Ensure the directory for saving QR codes exists
+qr_code_path = Path(qr_code_dir)
+qr_code_path.mkdir(parents=True, exist_ok=True)
 
-def setup_logging():
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-        ]
-    )
+# Generate and save the QR code
+def generate_qr_code(data_url, save_path, fill_color, back_color):
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(data_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color=fill_color, back_color=back_color)
 
-def create_directory(path: Path):
-    try:
-        path.mkdir(parents=True, exist_ok=True)
-    except Exception as e:
-        logging.error(f"Failed to create directory {path}: {e}")
-        exit(1)
-
-def is_valid_url(url):
-    if validators.url(url):
-        return True
-    else:
-        logging.error(f"Invalid URL provided: {url}")
-        return False
-
-def generate_qr_code(data, path, fill_color='red', back_color='white'):
-    if not is_valid_url(data):
-        return  # Exit the function if the URL is not valid
-
-    try:
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(data)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color=fill_color, back_color=back_color)
-
-        with path.open('wb') as qr_file:
-            img.save(qr_file)
-        logging.info(f"QR code successfully saved to {path}")
-
-    except Exception as e:
-        logging.error(f"An error occurred while generating or saving the QR code: {e}")
-
-def main():
-    # Set up command-line argument parsing
-    parser = argparse.ArgumentParser(description='Generate a QR code.')
-    parser.add_argument('--url', help='The URL to encode in the QR code', default='https://github.com/HariniV02')
-    args = parser.parse_args()
-
-    # Initial logging setup
-    setup_logging()
-    
-    # Filename for the QR code (fixed to github_qr_code.png)
-    qr_filename = "github_qr_code.png"
-
-    # Create the full path for the QR code file
-    qr_code_full_path = Path.cwd() / QR_DIRECTORY / qr_filename
-    
-    # Ensure the QR code directory exists
-    create_directory(Path.cwd() / QR_DIRECTORY)
-    
-    # Generate and save the QR code
-    generate_qr_code(args.url, qr_code_full_path, FILL_COLOR, BACK_COLOR)
+    img.save(save_path)
+    logging.info(f"QR code saved at {save_path}")
 
 if __name__ == "__main__":
-    main()
+    save_path = qr_code_path / qr_code_filename
+    generate_qr_code(qr_data_url, save_path, fill_color, back_color)

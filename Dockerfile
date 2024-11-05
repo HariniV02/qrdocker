@@ -1,22 +1,24 @@
-# Use a lightweight base image with Python 3.9
+# Use a lightweight Python image
 FROM python:3.9-slim
 
-# Set the working directory inside the container
-WORKDIR /app
+# Set the working directory inside the container to /app/qrdocker
+WORKDIR /app/qrdocker
 
-# Copy the Python script into the container
-COPY generate_qr.py .
+# Copy the Python script into the /app/qrdocker directory
+COPY main.py .
 
-# Install the required dependencies
+# Install necessary Python packages
 RUN pip install qrcode[pil]
 
-# Define environment variables with default values (optional)
-ENV QR_DATA_URL="https://github.com/kaw393939" \
-    QR_CODE_DIR="qr_codes" \
-    QR_CODE_FILENAME="github_qr_code.png"
+# Set environment variables with defaults
+ENV QR_DATA_URL="https://github.com/kaw393939"
+ENV QR_CODE_DIR="qr_codes"
+ENV QR_CODE_FILENAME="github_qr_code.png"
+ENV FILL_COLOR="blue"
+ENV BACK_COLOR="white"
 
-# Create a directory inside the container to store the QR code images
-RUN mkdir -p /app/${QR_CODE_DIR}
+# Create directory for QR codes
+RUN mkdir -p /app/qrdocker/${QR_CODE_DIR}
 
-# Entrypoint to execute the Python script when the container starts
-ENTRYPOINT ["python", "generate_qr.py"]
+# Entrypoint to run the QR code generator script
+ENTRYPOINT ["python", "main.py"]
